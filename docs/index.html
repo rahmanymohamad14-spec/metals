@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>داشبورد خودکار طلا، نقره و مس</title>
+<style>
+:root{--bg:#f6f4ef;--c:#fff;--tx:#1d1d1b;--mu:#6b6860;--bd:#e0dcd2;--ac:#b8860b;--up:#1a7f4b;--dn:#c0392b;color-scheme:light dark}
+@media (prefers-color-scheme:dark){:root{--bg:#16150f;--c:#201f17;--tx:#f1eee4;--mu:#a29e90;--bd:#3a3829;--ac:#e0b43a;--up:#4cc38a;--dn:#ef7b6e}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--tx);font-family:Tahoma,system-ui,sans-serif;line-height:1.8}
+main{max-width:880px;margin:auto;padding:16px}h1{font-size:1.3rem;margin:.2em 0}.sub{color:var(--mu);font-size:.85rem}
+.card{background:var(--c);border:1px solid var(--bd);border-radius:12px;padding:14px;margin:12px 0}.card h2{font-size:1rem;margin:0 0 8px}
+.warn{border-color:var(--ac);font-size:.85rem}.tabs{display:flex;flex-wrap:wrap;gap:6px}
+.tabs button{padding:6px 12px;border:1px solid var(--bd);background:var(--c);color:var(--tx);border-radius:8px;font:inherit;cursor:pointer}
+.tabs button.on{border-color:var(--ac);color:var(--ac);font-weight:bold}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px}
+.m{border:1px solid var(--bd);border-radius:10px;padding:6px 10px}.m b{display:block}.m span{color:var(--mu);font-size:.8rem}
+.up{color:var(--up)}.dn{color:var(--dn)}.chart{overflow-x:auto}svg{width:100%;min-width:420px;height:200px}
+a{color:var(--ac)}li{margin-bottom:4px;font-size:.9rem}pre{white-space:pre-wrap;font:inherit;margin:0}
+</style></head><body><main>
+<h1>داشبورد خودکار طلا، نقره و مس</h1>
+<div class="sub" id="upd"></div>
+<div class="card warn">این صفحه فرمان خرید یا فروش نمی‌دهد. شاخص‌ها فقط گذشته را خلاصه می‌کنند و توصیه‌ی مالی نیستند. قیمت‌های ایران از وب‌سایت‌ها گرفته می‌شود و ممکن است خطا یا تأخیر داشته باشد.</div>
+<div class="card"><div class="tabs" id="tabs"></div></div>
+<div class="card"><h2 id="ttl"></h2><div class="grid" id="mets"></div><p id="state" class="sub"></p>
+<div class="chart" id="chart"></div><div class="sub">خط ضخیم: قیمت، کوتاه‌خط: میانگین ۵ روزه، بلندخط: میانگین ۲۰ روزه</div></div>
+<div class="card"><h2>تحلیل خودکار Claude</h2><pre id="ai">تحلیل فعال نشده است.</pre></div>
+<div class="card"><h2>تیترهای خبر (۴۸ ساعت اخیر)</h2><div id="news"></div></div>
+<div class="card sub" id="err"></div>
+</main>
+<script src="data.js"></script>
+<script>
+const D=window.DATA||{series:{},news:{},errors:[]},$=i=>document.getElementById(i);
+const S=[["g_gold","طلای جهانی","دلار/اونس"],["g_silver","نقره‌ی جهانی","دلار/اونس"],["g_copper","مس جهانی (COMEX)","دلار/پوند"],
+["i_gold18","طلای ۱۸ عیار ایران","ریال"],["i_coin","سکه امامی","ریال"],["i_usd","دلار","ریال"],["i_silver","گرم نقره ۹۹۹","ریال"]];
+const NW={gold:"طلا",silver:"نقره",copper:"مس"};let cur="g_gold";
+const fa=n=>n==null||!isFinite(n)?"-":Number(n).toLocaleString("fa-IR",{maximumFractionDigits:2});
+const sma=(a,n)=>a.map((_,i)=>i<n-1?null:a.slice(i-n+1,i+1).reduce((x,y)=>x+y,0)/n);
+function rsi(a,n=14){if(a.length<=n)return null;let g=0,l=0;for(let i=a.length-n;i<a.length;i++){const d=a[i]-a[i-1];d>0?g+=d:l-=d}return l===0?100:100-100/(1+g/l)}
+const chg=(a,k)=>a.length>k?(a[a.length-1]/a[a.length-1-k]-1)*100:null;
+function render(){
+ $("upd").textContent=D.updated?"آخرین به‌روزرسانی: "+D.updated:"";
+ $("tabs").innerHTML="";S.forEach(s=>{const b=document.createElement("button");b.textContent=s[1];b.className=s[0]===cur?"on":"";b.onclick=()=>{cur=s[0];render()};$("tabs").appendChild(b)});
+ const meta=S.find(s=>s[0]===cur),o=D.series[cur]||{},dates=Object.keys(o).sort(),a=dates.map(d=>o[d]);
+ $("ttl").textContent=meta[1]+" ("+meta[2]+")";
+ const r=rsi(a),pc=v=>v==null?"<b>-</b>":`<b class="${v>=0?"up":"dn"}">${fa(v)}٪</b>`;
+ $("mets").innerHTML=`<div class="m"><span>آخرین قیمت</span><b>${a.length?fa(a[a.length-1]):"-"}</b></div><div class="m"><span>۱ روزه</span>${pc(chg(a,1))}</div><div class="m"><span>۷ روزه</span>${pc(chg(a,7))}</div><div class="m"><span>۳۰ روزه</span>${pc(chg(a,30))}</div><div class="m"><span>RSI (۱۴)</span><b>${fa(r)}</b></div>`;
+ const s5=sma(a,5),s20=sma(a,20);let st=a.length<20?"سابقه‌ی کافی نیست (حداقل ۲۰ روز). برای قیمت‌های ایران هر روز یک نقطه جمع می‌شود.":"";
+ if(a.length>=20){const up=s5[a.length-1]>s20[a.length-1];st=`میانگین ۵ روزه ${up?"بالاتر":"پایین‌تر"} از ۲۰ روزه است (روند کوتاه‌مدت ${up?"صعودی":"نزولی"}). `+(r>70?"RSI بالای ۷۰: رشد اخیر تند بوده.":r<30?"RSI زیر ۳۰: افت اخیر تند بوده.":"RSI در محدوده‌ی میانی است.")}
+ $("state").textContent=st;
+ if(a.length>1){const W=600,H=200,p=8,v=a.concat(s5.filter(x=>x),s20.filter(x=>x)),lo=Math.min(...v),hi=Math.max(...v),X=i=>p+i*(W-2*p)/(a.length-1),Y=x=>H-p-(x-lo)/((hi-lo)||1)*(H-2*p);
+  const ln=(arr,c,w,d)=>`<polyline fill="none" stroke="${c}" stroke-width="${w}" ${d?`stroke-dasharray="${d}"`:""} points="${arr.map((x,i)=>x==null?"":X(i)+","+Y(x)).filter(Boolean).join(" ")}"/>`;
+  $("chart").innerHTML=`<svg viewBox="0 0 ${W} ${H}">${ln(a,"var(--tx)",2)}${ln(s5,"var(--ac)",1.5,"4 3")}${ln(s20,"var(--up)",1.5,"8 4")}</svg>`}else $("chart").innerHTML="";
+ $("ai").textContent=D.analysis||"تحلیل خودکار فعال نیست (کلید API در README توضیح داده شده).";
+ $("news").innerHTML="";for(const k in NW){const h=document.createElement("b");h.textContent=NW[k];$("news").appendChild(h);const ul=document.createElement("ul");
+  (D.news[k]||[]).forEach(n=>{const li=document.createElement("li"),a2=document.createElement("a");a2.textContent=n.t;if(/^https?:/.test(n.u||""))a2.href=n.u;a2.target="_blank";a2.rel="noopener";li.appendChild(a2);ul.appendChild(li)});$("news").appendChild(ul)}
+ $("err").textContent=(D.errors&&D.errors.length)?"خطاهای آخرین اجرا: "+D.errors.join(" | "):"";
+}
+render();
+</script></body></html>
