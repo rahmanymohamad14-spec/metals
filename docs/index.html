@@ -1,58 +1,184 @@
 <!DOCTYPE html>
 <html lang="fa" dir="rtl"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>داشبورد خودکار طلا، نقره و مس</title>
+<title>داشبورد تحلیل طلا، نقره و مس</title>
 <style>
 :root{--bg:#f6f4ef;--c:#fff;--tx:#1d1d1b;--mu:#6b6860;--bd:#e0dcd2;--ac:#b8860b;--up:#1a7f4b;--dn:#c0392b;color-scheme:light dark}
 @media (prefers-color-scheme:dark){:root{--bg:#16150f;--c:#201f17;--tx:#f1eee4;--mu:#a29e90;--bd:#3a3829;--ac:#e0b43a;--up:#4cc38a;--dn:#ef7b6e}}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--tx);font-family:Tahoma,system-ui,sans-serif;line-height:1.8}
-main{max-width:880px;margin:auto;padding:16px}h1{font-size:1.3rem;margin:.2em 0}.sub{color:var(--mu);font-size:.85rem}
+main{max-width:940px;margin:auto;padding:16px}h1{font-size:1.3rem;margin:.2em 0}.sub{color:var(--mu);font-size:.82rem}
 .card{background:var(--c);border:1px solid var(--bd);border-radius:12px;padding:14px;margin:12px 0}.card h2{font-size:1rem;margin:0 0 8px}
 .warn{border-color:var(--ac);font-size:.85rem}.tabs{display:flex;flex-wrap:wrap;gap:6px}
-.tabs button{padding:6px 12px;border:1px solid var(--bd);background:var(--c);color:var(--tx);border-radius:8px;font:inherit;cursor:pointer}
+.tabs button{padding:5px 10px;border:1px solid var(--bd);background:var(--c);color:var(--tx);border-radius:8px;font:inherit;font-size:.85rem;cursor:pointer}
 .tabs button.on{border-color:var(--ac);color:var(--ac);font-weight:bold}
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px}
-.m{border:1px solid var(--bd);border-radius:10px;padding:6px 10px}.m b{display:block}.m span{color:var(--mu);font-size:.8rem}
-.up{color:var(--up)}.dn{color:var(--dn)}.chart{overflow-x:auto}svg{width:100%;min-width:420px;height:200px}
-a{color:var(--ac)}li{margin-bottom:4px;font-size:.9rem}pre{white-space:pre-wrap;font:inherit;margin:0}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(135px,1fr));gap:8px}
+.m{border:1px solid var(--bd);border-radius:10px;padding:6px 10px}.m b{display:block}.m span{color:var(--mu);font-size:.78rem;display:block}
+.up{color:var(--up)}.dn{color:var(--dn)}.chart{overflow-x:auto}svg{width:100%;min-width:420px;height:210px}
+table{width:100%;border-collapse:collapse;font-size:.85rem}th,td{padding:5px 6px;border-bottom:1px solid var(--bd);text-align:right;vertical-align:top}th{color:var(--mu);font-weight:normal}
+.tw{overflow-x:auto}a{color:var(--ac)}li{margin-bottom:4px;font-size:.88rem}pre{white-space:pre-wrap;font:inherit;margin:0}
+.two{display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));gap:12px}
+input{width:100%;background:var(--bg);color:var(--tx);border:1px solid var(--bd);border-radius:8px;padding:6px;font:inherit}label{font-size:.8rem;color:var(--mu)}
 </style></head><body><main>
-<h1>داشبورد خودکار طلا، نقره و مس</h1>
-<div class="sub" id="upd"></div>
-<div class="card warn">این صفحه فرمان خرید یا فروش نمی‌دهد. شاخص‌ها فقط گذشته را خلاصه می‌کنند و توصیه‌ی مالی نیستند. قیمت‌های ایران از وب‌سایت‌ها گرفته می‌شود و ممکن است خطا یا تأخیر داشته باشد.</div>
-<div class="card"><div class="tabs" id="tabs"></div></div>
-<div class="card"><h2 id="ttl"></h2><div class="grid" id="mets"></div><p id="state" class="sub"></p>
-<div class="chart" id="chart"></div><div class="sub">خط ضخیم: قیمت، کوتاه‌خط: میانگین ۵ روزه، بلندخط: میانگین ۲۰ روزه</div></div>
-<div class="card"><h2>تحلیل خودکار Claude</h2><pre id="ai">تحلیل فعال نشده است.</pre></div>
-<div class="card"><h2>تیترهای خبر (۴۸ ساعت اخیر)</h2><div id="news"></div></div>
+<h1>داشبورد تحلیل طلا، نقره و مس</h1><div class="sub" id="upd"></div>
+<div class="card warn">این صفحه فرمان خرید یا فروش نمی‌دهد. «نمره‌ی شرایط» فقط تعداد نشانه‌های هم‌جهت را می‌شمارد و پیش‌بینی نیست. داده‌ها از وب‌سایت‌ها گرفته می‌شود و ممکن است خطا یا تأخیر داشته باشد. توصیه‌ی مالی نیست.</div>
+
+<div class="card"><h2>خلاصه‌ی شرایط</h2><div class="grid" id="sum"></div></div>
+
+<div class="card"><h2>جزئیات هر دارایی</h2><div class="tabs" id="atabs"></div>
+<div class="tw" style="margin-top:8px"><table><thead><tr><th>دسته</th><th>نشانه</th><th>توضیح</th></tr></thead><tbody id="score"></tbody></table></div>
+<div class="sub" id="scn"></div></div>
+
+<div class="card"><h2>موقعیت صندوق‌های سفته‌باز (COT) و حجم</h2><div class="grid" id="cotv"></div>
+<div class="sub">COT هفتگی است (داده‌ی سه‌شنبه، انتشار جمعه). موقعیت خرید بسیار شلوغ می‌تواند ریسک برگشت باشد و فروش افراطی می‌تواند نشانه‌ی کف نسبی باشد، ولی همیشه درست درنمی‌آید. حجم از قراردادهای آتی COMEX و ETFها گرفته می‌شود و حجم امروز ممکن است ناقص باشد.</div></div>
+
+<div class="card"><h2>حباب و پریمیوم ایران</h2><div class="grid" id="bub"></div>
+<div class="tw"><table><thead><tr><th>صندوق طلا</th><th>قیمت</th><th>NAV</th><th>حباب</th></tr></thead><tbody id="fund"></tbody></table></div><div class="sub" id="bubn"></div></div>
+
+<div class="card"><h2>بازار ایران: صندوق‌های طلا (tsetmc)</h2><div class="tw"><table><thead><tr><th>نماد</th><th>قیمت</th><th>NAV</th><th>حباب</th><th>حجم</th><th>ارزش (میلیارد ریال)</th><th>ورود پول حقیقی (میلیارد ریال)</th><th>قدرت خریدار حقیقی</th><th>فشار سفارش (خرید÷فروش)</th><th>اسپرد</th></tr></thead><tbody id="irt"></tbody></table></div><div class="sub" id="irn"></div>
+<div class="sub">ورود پول حقیقی = (حجم خرید حقیقی − فروش حقیقی) × قیمت. قدرت خریدار حقیقی = متوسط خرید هر کد حقیقی ÷ متوسط فروش هر کد؛ بالای ۱ یعنی خریدارها حجم بیشتری می‌خرند. فشار سفارش = جمع حجم سفارش‌های خرید ÷ فروش در ۵ ردیف اول دفتر سفارش.</div></div>
+<div class="card"><h2>کلان و نسبت‌ها</h2><div class="grid" id="macro"></div><p class="sub" id="mnote"></p></div>
+
+<div class="card"><h2>نمودار</h2><div class="tabs" id="tabs"></div><div class="grid" id="mets" style="margin-top:10px"></div><p class="sub" id="state"></p><div class="chart" id="chart"></div>
+<div class="sub">قیمت (ضخیم)، میانگین ۲۰ روزه (بلندخط)، باند بولینگر (کوتاه‌خط)</div></div>
+
+<div class="card"><h2>محاسبه‌گر ریسک (برای دارایی منتخب در بخش «جزئیات»)</h2><div class="grid">
+<div><label>سرمایه</label><input id="cap" value="1000000000" inputmode="decimal"></div>
+<div><label>ریسک مجاز در هر معامله (٪)</label><input id="rk" value="1" inputmode="decimal"></div>
+<div><label>ضریب حدضرر (× نوسان روزانه)</label><input id="mul" value="2" inputmode="decimal"></div></div>
+<div class="grid" style="margin-top:8px" id="rout"></div>
+<div class="sub">نوسان روزانه = میانگین تغییر مطلق ۱۴ روز اخیر. مقدار حدضرر و حجم پیشنهادی فقط یک محاسبه‌ی ساده‌ی مدیریت ریسک است، نه توصیه.</div></div>
+
+<div class="card"><h2>پیش از هر خرید این‌ها را بررسی کنید</h2><ul class="sub" style="font-size:.85rem">
+<li>افق زمانی و دلیل خرید را بنویسید، و سطحی که اگر برسد اشتباه بودنتان ثابت می‌شود.</li>
+<li>سهم این دارایی از کل سرمایه و حداکثر زیان قابل‌تحمل.</li>
+<li>رویدادهای نزدیک: گزارش تورم و اشتغال آمریکا، جلسه‌ی فدرال رزرو، سخنرانی‌ها. این صفحه تقویم رویداد ندارد.</li>
+<li>در ایران: حباب، اختلاف خرید و فروش، کارمزد و نقدشوندگی در لحظه‌ی معامله.</li></ul></div>
+
+<div class="card"><h2>تحلیل خودکار Claude</h2><pre id="ai"></pre></div>
+<div class="card"><h2>خبر از منابع منتخب (۴۸ ساعت اخیر)</h2><div class="sub">فارسی: دنیای اقتصاد، اقتصادآنلاین، ایسنا، ایرنا، تسنیم، مهر، اکوایران، تجارت‌نیوز. انگلیسی: رویترز، بلومبرگ، کیتکو، سی‌ان‌بی‌سی، فایننشال تایمز، وال‌استریت ژورنال. برچسب ▲▼ حدس تقریبی از کلمات تیتر است.</div><div class="two" id="news"></div></div>
 <div class="card sub" id="err"></div>
 </main>
 <script src="data.js"></script>
+<script src="iran.js"></script>
 <script>
-const D=window.DATA||{series:{},news:{},errors:[]},$=i=>document.getElementById(i);
-const S=[["g_gold","طلای جهانی","دلار/اونس"],["g_silver","نقره‌ی جهانی","دلار/اونس"],["g_copper","مس جهانی (COMEX)","دلار/پوند"],
-["i_gold18","طلای ۱۸ عیار ایران","ریال"],["i_coin","سکه امامی","ریال"],["i_usd","دلار","ریال"],["i_silver","گرم نقره ۹۹۹","ریال"]];
-const NW={gold:"طلا",silver:"نقره",copper:"مس"};let cur="g_gold";
-const fa=n=>n==null||!isFinite(n)?"-":Number(n).toLocaleString("fa-IR",{maximumFractionDigits:2});
+const D=Object.assign({series:{},news:{},funds:{},cot:{},errors:[]},window.DATA||{}),$=i=>document.getElementById(i);
+const IR=window.IRAN||{};
+if(IR.funds&&Object.keys(IR.funds).length)D.funds=IR.funds;
+for(const n in (IR.hist||{})){const o={};for(const d in IR.hist[n])if(IR.hist[n][d].b!=null)o[d]=IR.hist[n][d].b;D.series["b_"+n]=Object.assign(D.series["b_"+n]||{},o)}
+const fa=(n,d=2)=>n==null||!isFinite(n)?"-":Number(n).toLocaleString("fa-IR",{maximumFractionDigits:d});
+const ser=k=>{const o=D.series[k]||{},ds=Object.keys(o).sort();return{d:ds,v:ds.map(x=>o[x])}};
 const sma=(a,n)=>a.map((_,i)=>i<n-1?null:a.slice(i-n+1,i+1).reduce((x,y)=>x+y,0)/n);
-function rsi(a,n=14){if(a.length<=n)return null;let g=0,l=0;for(let i=a.length-n;i<a.length;i++){const d=a[i]-a[i-1];d>0?g+=d:l-=d}return l===0?100:100-100/(1+g/l)}
+const ema=(a,n)=>{const k=2/(n+1);let e=null;return a.map(x=>(e=e==null?x:x*k+e*(1-k)))};
+const sd=a=>{const m=a.reduce((x,y)=>x+y,0)/a.length;return Math.sqrt(a.reduce((x,y)=>x+(y-m)**2,0)/a.length)};
+function rsi(a,n=14){if(a.length<=n)return null;let g=0,l=0;for(let i=a.length-n;i<a.length;i++){const d=a[i]-a[i-1];if(d>0)g+=d;else l-=d}return l===0?100:100-100/(1+g/l)}
 const chg=(a,k)=>a.length>k?(a[a.length-1]/a[a.length-1-k]-1)*100:null;
-function render(){
- $("upd").textContent=D.updated?"آخرین به‌روزرسانی: "+D.updated:"";
- $("tabs").innerHTML="";S.forEach(s=>{const b=document.createElement("button");b.textContent=s[1];b.className=s[0]===cur?"on":"";b.onclick=()=>{cur=s[0];render()};$("tabs").appendChild(b)});
- const meta=S.find(s=>s[0]===cur),o=D.series[cur]||{},dates=Object.keys(o).sort(),a=dates.map(d=>o[d]);
- $("ttl").textContent=meta[1]+" ("+meta[2]+")";
- const r=rsi(a),pc=v=>v==null?"<b>-</b>":`<b class="${v>=0?"up":"dn"}">${fa(v)}٪</b>`;
- $("mets").innerHTML=`<div class="m"><span>آخرین قیمت</span><b>${a.length?fa(a[a.length-1]):"-"}</b></div><div class="m"><span>۱ روزه</span>${pc(chg(a,1))}</div><div class="m"><span>۷ روزه</span>${pc(chg(a,7))}</div><div class="m"><span>۳۰ روزه</span>${pc(chg(a,30))}</div><div class="m"><span>RSI (۱۴)</span><b>${fa(r)}</b></div>`;
- const s5=sma(a,5),s20=sma(a,20);let st=a.length<20?"سابقه‌ی کافی نیست (حداقل ۲۰ روز). برای قیمت‌های ایران هر روز یک نقطه جمع می‌شود.":"";
- if(a.length>=20){const up=s5[a.length-1]>s20[a.length-1];st=`میانگین ۵ روزه ${up?"بالاتر":"پایین‌تر"} از ۲۰ روزه است (روند کوتاه‌مدت ${up?"صعودی":"نزولی"}). `+(r>70?"RSI بالای ۷۰: رشد اخیر تند بوده.":r<30?"RSI زیر ۳۰: افت اخیر تند بوده.":"RSI در محدوده‌ی میانی است.")}
- $("state").textContent=st;
- if(a.length>1){const W=600,H=200,p=8,v=a.concat(s5.filter(x=>x),s20.filter(x=>x)),lo=Math.min(...v),hi=Math.max(...v),X=i=>p+i*(W-2*p)/(a.length-1),Y=x=>H-p-(x-lo)/((hi-lo)||1)*(H-2*p);
-  const ln=(arr,c,w,d)=>`<polyline fill="none" stroke="${c}" stroke-width="${w}" ${d?`stroke-dasharray="${d}"`:""} points="${arr.map((x,i)=>x==null?"":X(i)+","+Y(x)).filter(Boolean).join(" ")}"/>`;
-  $("chart").innerHTML=`<svg viewBox="0 0 ${W} ${H}">${ln(a,"var(--tx)",2)}${ln(s5,"var(--ac)",1.5,"4 3")}${ln(s20,"var(--up)",1.5,"8 4")}</svg>`}else $("chart").innerHTML="";
- $("ai").textContent=D.analysis||"تحلیل خودکار فعال نیست (کلید API در README توضیح داده شده).";
- $("news").innerHTML="";for(const k in NW){const h=document.createElement("b");h.textContent=NW[k];$("news").appendChild(h);const ul=document.createElement("ul");
-  (D.news[k]||[]).forEach(n=>{const li=document.createElement("li"),a2=document.createElement("a");a2.textContent=n.t;if(/^https?:/.test(n.u||""))a2.href=n.u;a2.target="_blank";a2.rel="noopener";li.appendChild(a2);ul.appendChild(li)});$("news").appendChild(ul)}
- $("err").textContent=(D.errors&&D.errors.length)?"خطاهای آخرین اجرا: "+D.errors.join(" | "):"";
-}
-render();
+const dif=(a,k)=>a.length>k?a[a.length-1]-a[a.length-1-k]:null;
+const L=a=>a[a.length-1];
+const pct=(arr,x)=>arr.filter(y=>y<=x).length/arr.length*100;
+function vol(a,n=30){if(a.length<n+1)return null;const r=[];for(let i=a.length-n;i<a.length;i++)r.push(Math.log(a[i]/a[i-1]));return sd(r)*Math.sqrt(252)*100}
+function mdd(a){let p=-Infinity,m=0;a.forEach(x=>{p=Math.max(p,x);m=Math.min(m,x/p-1)});return m*100}
+function corr(k1,k2,n=60){const A=D.series[k1]||{},B=D.series[k2]||{},ds=Object.keys(A).filter(d=>d in B).sort().slice(-n-1);if(ds.length<20)return null;
+ const x=[],y=[];for(let i=1;i<ds.length;i++){x.push(Math.log(A[ds[i]]/A[ds[i-1]]));y.push(Math.log(B[ds[i]]/B[ds[i-1]]))}
+ const mx=x.reduce((p,q)=>p+q,0)/x.length,my=y.reduce((p,q)=>p+q,0)/y.length;let c=0;for(let i=0;i<x.length;i++)c+=(x[i]-mx)*(y[i]-my);return c/x.length/(sd(x)*sd(y))}
+const mark=s=>s==null?"–":s>0?'<span class="up">▲</span>':s<0?'<span class="dn">▼</span>':"●";
+const A={gold:{n:"طلا",p:"g_gold",v:"v_g_gold",c:"gold"},silver:{n:"نقره",p:"g_silver",v:"v_g_silver",c:"silver"},copper:{n:"مس",p:"g_copper",v:"v_g_copper",c:"copper"}};
+let asset="gold";
+function cotInfo(c){const r=(D.cot||{})[c]||[];if(r.length<20)return null;const net=r.map(o=>(o.ml-o.ms)/o.oi*100),l=net[net.length-1],q=r[r.length-1];
+ return{net:l,p:pct(net,l),n:r.length,d:q.d,ml:q.ml,ms:q.ms,w:net.length>4?l-net[net.length-5]:null}}
+function volInfo(k){const p=ser(k.p).v,v=ser(k.v).v,n=p.length;if(n<30||v.length!==n||!v.some(x=>x>0))return null;
+ const avg=v.slice(n-21,n-1).reduce((x,y)=>x+y,0)/20;let up=0,dn=0;for(let i=n-20;i<n;i++){if(p[i]>p[i-1])up+=v[i];else dn+=v[i]}
+ let o=0;const obv=p.map((x,i)=>i?(o+=Math.sign(x-p[i-1])*v[i]):0),os=sma(obv,20);
+ return{ratio:avg?v[n-1]/avg:null,ud:dn?up/dn:null,obvUp:L(obv)>L(os)}}
+function score(key){
+ const k=A[key],p=ser(k.p).v;if(p.length<60)return null;const R=[],pr=L(p),s50=sma(p,50),s200=sma(p,200);
+ let t,tt;if(p.length>=200){t=pr>L(s50)&&L(s50)>L(s200)?1:pr<L(s50)&&L(s50)<L(s200)?-1:0;tt=`قیمت ${pr>L(s50)?"بالای":"زیر"} میانگین ۵۰ روزه، و میانگین ۵۰ ${L(s50)>L(s200)?"بالای":"زیر"} ۲۰۰ روزه است`}
+ else{t=pr>L(s50)?1:-1;tt=`قیمت ${pr>L(s50)?"بالای":"زیر"} میانگین ۵۰ روزه است`}
+ R.push(["روند",t,tt]);
+ const e12=ema(p,12),e26=ema(p,26),mac=e12.map((x,i)=>x-e26[i]),h=L(mac)-L(ema(mac,9)),r=rsi(p),m30=chg(p,30);
+ R.push(["مومنتوم",h>0&&m30>0?1:h<0&&m30<0?-1:0,`MACD ${h>0?"مثبت":"منفی"}، تغییر ۳۰ روزه ${fa(m30)}٪، RSI ${fa(r,0)}${r>70?" (داغ)":r<30?" (اشباع فروش)":""}`]);
+ const vi=volInfo(k);
+ R.push(vi?["حجم",vi.ud>1.2&&vi.obvUp?1:vi.ud!=null&&vi.ud<0.8&&!vi.obvUp?-1:0,`حجم آخرین روز ${fa(vi.ratio)}× میانگین ۲۰ روزه. نسبت حجم روزهای صعودی به نزولی ${fa(vi.ud)}. OBV ${vi.obvUp?"بالای":"زیر"} میانگینش`]:["حجم",null,"داده‌ی حجم دریافت نشده"]);
+ const ci=cotInfo(k.c);
+ R.push(ci?["موقعیت صندوق‌ها (COT)",ci.p>90?-1:ci.p<20?1:0,`خالص خرید سفته‌بازان ${fa(ci.net)}٪ از موقعیت‌های باز، صدک ${fa(ci.p,0)} در ${fa(ci.n,0)} هفته${ci.w!=null?`، تغییر ۴ هفته ${fa(ci.w)} واحد درصد`:""}. (بالای صدک ۹۰ = ازدحام خرید، زیر ۲۰ = فروش افراطی)`]:["موقعیت صندوق‌ها (COT)",null,"داده‌ی COT دریافت نشده"]);
+ const dx=chg(ser("m_dxy").v,30),rr=ser("r_real10").v,dr=rr.length>30?L(rr)-rr[rr.length-31]:null,vx=chg(ser("m_vix").v,30);
+ let mc=0,mn=0,mt=[];
+ if(dx!=null){mn++;if(dx<0)mc++;mt.push(`دلار ۳۰ روزه ${fa(dx)}٪`)}
+ if(key!=="copper"&&dr!=null){mn++;if(dr<0)mc++;mt.push(`بازده واقعی ۱۰ ساله ${fa(dr)} واحد درصد`)}
+ if(key==="copper"&&vx!=null){mn++;if(vx<0)mc++;mt.push(`VIX ۳۰ روزه ${fa(vx)}٪`)}
+ R.push(["کلان",mn?(mc===mn?1:mc===0?-1:0):null,mn?mt.join("، ")+" (دلار و بازده واقعی در حال افت معمولاً به نفع طلا و نقره است)":"داده‌ی کلان دریافت نشده"]);
+ if(key==="gold"){const b=ser("x_b18").v;R.push(b.length?["پریمیوم ایران",L(b)>8?-1:L(b)<2?1:0,`طلای ۱۸ عیار ${fa(L(b))}٪ بالاتر از قیمت جهانی × دلار آزاد (بالای ۸٪ = پریمیوم زیاد، زیر ۲٪ = کم)`]:["پریمیوم ایران",null,"داده‌ی ایران دریافت نشده"])}
+ const fk=Object.values(D.funds||{}).filter(o=>o.bubble!=null);
+ if(key==="gold"&&fk.length){const ab=fk.reduce((x,o)=>x+o.bubble,0)/fk.length,rn=fk.reduce((x,o)=>x+(o.rnet||0),0);R.push(["صندوق‌های طلای ایران",ab>4?-1:(ab<1&&rn>0)?1:0,`میانگین حباب ${fa(ab)}٪، خالص ورود پول حقیقی ${fa(rn/1e9,1)} میلیارد ریال (حباب بالای ۴٪ = گران، زیر ۱٪ همراه با ورود پول = مساعد)`])}
+ const nn=[...(D.news[key+"_fa"]||[]),...(D.news[key+"_en"]||[])],tl=nn.filter(x=>x.s==="+").length-nn.filter(x=>x.s==="-").length;
+ R.push(nn.length?["خبر",tl>=3?1:tl<=-3?-1:0,`از ${fa(nn.length,0)} تیتر، ${fa(nn.filter(x=>x.s==="+").length,0)} مثبت و ${fa(nn.filter(x=>x.s==="-").length,0)} منفی (حدس تقریبی)`]:["خبر",null,"خبری دریافت نشده"]);
+ const v1=vol(p),vl=vol(p,Math.min(250,p.length-1));
+ if(v1!=null&&vl!=null)R.push(["ریسک نوسان",null,`نوسان سالانه‌ی ۳۰ روزه ${fa(v1)}٪ در برابر ${fa(vl)}٪ در بلندمدت${v1>vl*1.3?" (نوسان بالاتر از معمول: حجم معامله را کم کنید)":""}. افت از سقف دوره ${fa(mdd(p))}٪`]);
+ const sc=R.filter(x=>x[1]!=null),tot=sc.reduce((x,y)=>x+y[1],0),avg=sc.length?tot/sc.length:0;
+ return{R,tot,n:sc.length,avg,lab:avg>=0.5?"شرایط نسبتاً مساعد":avg<=-0.5?"شرایط نسبتاً نامساعد":"مختلط"}}
+function renderSum(){
+ $("sum").innerHTML=Object.keys(A).map(k=>{const s=score(k);return s?`<div class="m"><span>${A[k].n}</span><b class="${s.avg>=0.5?"up":s.avg<=-0.5?"dn":""}">${s.lab}</b><span>${fa(s.tot,0)} از ${fa(s.n,0)} دسته</span></div>`:`<div class="m"><span>${A[k].n}</span><b>-</b><span>داده‌ی کافی نیست</span></div>`}).join("");
+ $("atabs").innerHTML="";Object.keys(A).forEach(k=>{const b=document.createElement("button");b.textContent=A[k].n;b.className=k===asset?"on":"";b.onclick=()=>{asset=k;renderSum();renderCalc()};$("atabs").appendChild(b)});
+ const s=score(asset);
+ $("score").innerHTML=s?s.R.map(r=>`<tr><td>${r[0]}</td><td>${mark(r[1])}</td><td>${r[2]}</td></tr>`).join(""):'<tr><td colspan="3" class="sub">داده‌ی کافی نیست (حداقل ۶۰ روز)</td></tr>';
+ $("scn").textContent=s?`جمع‌بندی: ${s.lab}. این فقط شمارش نشانه‌هاست. وزن‌ها برابر و قواعد ساده‌اند و هیچ تضمینی درباره‌ی آینده نمی‌دهد.`:""}
+function renderCot(){
+ const out=[];for(const k in A){const c=cotInfo(A[k].c),v=volInfo(A[k]);
+  if(c)out.push(`<div class="m"><span>${A[k].n}: خالص خرید سفته‌بازان</span><b>${fa(c.net)}٪ | صدک ${fa(c.p,0)}</b><span>${c.d} | خرید ${fa(c.ml,0)} / فروش ${fa(c.ms,0)}</span></div>`);
+  if(v)out.push(`<div class="m"><span>${A[k].n}: حجم نسبت به میانگین ۲۰ روزه</span><b>${fa(v.ratio)}×</b><span>صعودی به نزولی ${fa(v.ud)}</span></div>`)}
+ [["e_gld","GLD (طلا)"],["e_slv","SLV (نقره)"],["e_copx","COPX (معدن‌کاران مس)"],["e_gdx","GDX (معدن‌کاران طلا)"]].forEach(([k,n])=>{const p=ser(k).v,v=ser("v_"+k).v;if(p.length>25&&v.length===p.length){const a=v.slice(-21,-1).reduce((x,y)=>x+y,0)/20;out.push(`<div class="m"><span>${n}: قیمت ۳۰ روزه</span><b>${fa(chg(p,30))}٪</b><span>حجم ${fa(a?L(v)/a:null)}× میانگین</span></div>`)}});
+ $("cotv").innerHTML=out.join("")||'<span class="sub">داده‌ای دریافت نشده</span>'}
+function renderBub(){
+ const f=D.funds||{},names=Object.keys(f).sort((x,y)=>f[y].bubble-f[x].bubble);
+ $("fund").innerHTML=names.length?names.map(n=>`<tr><td>${n}</td><td>${fa(f[n].price,0)}</td><td>${fa(f[n].nav,0)}</td><td class="${f[n].bubble>3?"dn":f[n].bubble<-1?"up":""}"><b>${fa(f[n].bubble)}٪</b></td></tr>`).join(""):'<tr><td colspan="4" class="sub">داده‌ی صندوق‌ها دریافت نشده (توضیح در بخش خطاها)</td></tr>';
+ const bx=(t,a)=>`<div class="m"><span>${t}</span><b class="${a.v.length&&L(a.v)>8?"dn":""}">${a.v.length?fa(L(a.v))+"٪":"-"}</b></div>`;
+ $("bub").innerHTML=bx("طلای ۱۸ عیار نسبت به قیمت جهانی",ser("x_b18"))+bx("سکه امامی نسبت به ارزش ذاتی طلا",ser("x_bcoin"));
+ $("bubn").textContent="حباب صندوق = (قیمت − NAV) ÷ NAV. پریمیوم طلا و سکه = اختلاف قیمت بازار با «اونس × دلار آزاد». مثبت یعنی خریدار بیشتر از ارزش محاسبه‌شده می‌پردازد."}
+function renderIran(){
+ const f=IR.funds||{},ns=Object.keys(f).sort((x,y)=>(f[y].val||0)-(f[x].val||0)),m=v=>v==null?"-":fa(v/1e9,1);
+ $("irn").textContent=IR.updated?"آخرین دریافت از tsetmc: "+IR.updated+" (وقت تهران). این داده را اسکریپت محلی روی کامپیوتر با اینترنت ایران می‌فرستد."+((IR.errors||[]).length?" خطا: "+IR.errors.join(" | "):""):"هنوز داده‌ای از اسکریپت محلی نرسیده است.";
+ $("irt").innerHTML=ns.length?ns.map(n=>{const o=f[n];return `<tr><td>${n}</td><td>${fa(o.price,0)}</td><td>${fa(o.nav,0)}</td><td class="${o.bubble>3?"dn":o.bubble<-1?"up":""}"><b>${fa(o.bubble)}٪</b></td><td>${fa(o.vol,0)}</td><td>${m(o.val)}</td><td class="${o.rnet>0?"up":o.rnet<0?"dn":""}">${m(o.rnet)}</td><td>${fa(o.power)}</td><td>${o.bid_vol&&o.ask_vol?fa(o.bid_vol/o.ask_vol):"-"}</td><td>${o.spread==null?"-":fa(o.spread)+"٪"}</td></tr>`}).join(""):'<tr><td colspan="10" class="sub">داده‌ای نیست</td></tr>'}
+function renderMacro(){
+ const out=[],card=(n,k,isRate)=>{const a=ser(k).v;if(a.length)out.push(`<div class="m"><span>${n}</span><b>${fa(L(a))}</b><span>۷ روزه ${isRate?fa(dif(a,7))+" واحد":fa(chg(a,7))+"٪"} | ۳۰ روزه ${isRate?fa(dif(a,30))+" واحد":fa(chg(a,30))+"٪"}</span></div>`)};
+ card("شاخص دلار DXY","m_dxy");card("بازده واقعی ۱۰ ساله آمریکا (٪)","r_real10",1);card("انتظار تورم ۱۰ ساله (٪)","r_be10",1);card("بازده ۱۰ ساله (٪)","r_y10",1);card("نرخ بهره فدرال (٪)","r_fed",1);
+ const y10=ser("r_y10").v,y2=ser("r_y2").v;if(y10.length&&y2.length)out.push(`<div class="m"><span>شیب منحنی ۱۰ ساله منهای ۲ ساله</span><b>${fa(L(y10)-L(y2))}</b><span>منفی = منحنی معکوس</span></div>`);
+ card("VIX","m_vix");card("نفت WTI","g_oil");card("S&P 500","m_spx");
+ const g=ser("g_gold").v,s=ser("g_silver").v,c=ser("g_copper").v;
+ if(g.length&&s.length){const n=Math.min(g.length,s.length),r=[];for(let i=1;i<=n;i++)r.push(g[g.length-i]/s[s.length-i]);out.push(`<div class="m"><span>نسبت طلا به نقره</span><b>${fa(r[0])}</b><span>صدک ${fa(pct(r,r[0]),0)} در ۱ سال</span></div>`)}
+ if(g.length&&c.length)out.push(`<div class="m"><span>نسبت مس به طلا (×۱۰۰۰)</span><b>${fa(L(c)/L(g)*1000)}</b><span>معیاری از ریسک‌پذیری اقتصاد</span></div>`);
+ const cr=corr("g_gold","m_dxy"),ct=corr("g_gold","r_real10");
+ if(cr!=null)out.push(`<div class="m"><span>همبستگی طلا و دلار (۶۰ روز)</span><b>${fa(cr)}</b></div>`);
+ if(ct!=null)out.push(`<div class="m"><span>همبستگی طلا و بازده واقعی (۶۰ روز)</span><b>${fa(ct)}</b></div>`);
+ $("macro").innerHTML=out.join("")||'<span class="sub">داده‌ای دریافت نشده</span>';
+ $("mnote").textContent="رابطه‌ی طلا با دلار و بازده واقعی در بلندمدت معمولاً معکوس بوده، ولی همیشه برقرار نیست."}
+let cur="g_gold";
+const LBL={g_gold:"طلای جهانی (دلار/اونس)",g_silver:"نقره‌ی جهانی (دلار/اونس)",g_copper:"مس COMEX (دلار/پوند)",g_plat:"پلاتین",i_gold18:"طلای ۱۸ عیار ایران (ریال)",i_gold24:"طلای ۲۴ عیار (ریال)",i_mesghal:"مثقال (ریال)",i_coin:"سکه امامی (ریال)",i_coin_old:"سکه طرح قدیم (ریال)",i_half:"نیم‌سکه (ریال)",i_quarter:"ربع‌سکه (ریال)",i_usd:"دلار آزاد (ریال)",i_silver:"گرم نقره ۹۹۹ (ریال)",x_b18:"پریمیوم طلای ۱۸ (٪)",x_bcoin:"پریمیوم سکه (٪)",e_gld:"GLD",e_slv:"SLV",e_cper:"CPER",e_gdx:"GDX",e_copx:"COPX"};
+function renderChart(){
+ const keys=Object.keys(D.series).filter(k=>Object.keys(D.series[k]||{}).length&&!/^(m_|r_|v_|g_oil)/.test(k));
+ if(!keys.includes(cur))cur=keys[0]||"g_gold";
+ $("tabs").innerHTML="";keys.forEach(k=>{const b=document.createElement("button");b.textContent=LBL[k]||(k.startsWith("b_")?"حباب "+k.slice(2):k);b.className=k===cur?"on":"";b.onclick=()=>{cur=k;renderChart()};$("tabs").appendChild(b)});
+ const a=ser(cur).v,pc=v=>v==null?"<b>-</b>":`<b class="${v>=0?"up":"dn"}">${fa(v)}٪</b>`,r=rsi(a);
+ $("mets").innerHTML=`<div class="m"><span>آخرین</span><b>${a.length?fa(L(a)):"-"}</b></div><div class="m"><span>۱ روزه</span>${pc(chg(a,1))}</div><div class="m"><span>۷ روزه</span>${pc(chg(a,7))}</div><div class="m"><span>۳۰ روزه</span>${pc(chg(a,30))}</div><div class="m"><span>RSI</span><b>${fa(r)}</b></div>`;
+ $("state").textContent=a.length<50?"سابقه‌ی کافی برای شاخص‌ها نیست (حداقل ۵۰ نقطه). سابقه‌ی داده‌های ایران از روز اول اجرا جمع می‌شود.":"";
+ if(a.length<2){$("chart").innerHTML="";return}
+ const s20=sma(a,20),bu=a.map((_,i)=>i<19?null:s20[i]+2*sd(a.slice(i-19,i+1))),bl=a.map((_,i)=>i<19?null:s20[i]-2*sd(a.slice(i-19,i+1)));
+ const W=600,H=200,p=8,v=a.concat(bu.filter(x=>x!=null),bl.filter(x=>x!=null)),lo=Math.min(...v),hi=Math.max(...v),X=i=>p+i*(W-2*p)/(a.length-1),Y=x=>H-p-(x-lo)/((hi-lo)||1)*(H-2*p);
+ const ln=(arr,c,w,d)=>`<polyline fill="none" stroke="${c}" stroke-width="${w}" ${d?`stroke-dasharray="${d}"`:""} points="${arr.map((x,i)=>x==null?"":X(i)+","+Y(x)).filter(Boolean).join(" ")}"/>`;
+ $("chart").innerHTML=`<svg viewBox="0 0 ${W} ${H}">${ln(bu,"var(--mu)",1,"3 3")}${ln(bl,"var(--mu)",1,"3 3")}${ln(s20,"var(--up)",1.5,"8 4")}${ln(a,"var(--tx)",2)}</svg>`}
+function renderCalc(){
+ const p=ser(A[asset].p).v,cap=parseFloat($("cap").value),rk=parseFloat($("rk").value)/100,mul=parseFloat($("mul").value);
+ if(p.length<16||!isFinite(cap)||!isFinite(rk)||!isFinite(mul)){$("rout").innerHTML='<span class="sub">داده یا ورودی کافی نیست</span>';return}
+ let m=0;for(let i=p.length-14;i<p.length;i++)m+=Math.abs(p[i]-p[i-1]);m/=14;const stop=m*mul,qty=cap*rk/stop,val=qty*L(p);
+ $("rout").innerHTML=`<div class="m"><span>${A[asset].n}: قیمت و نوسان روزانه</span><b>${fa(L(p))}</b><span>±${fa(m)}</span></div><div class="m"><span>فاصله‌ی حدضرر</span><b>${fa(stop)}</b><span>سطح: ${fa(L(p)-stop)}</span></div><div class="m"><span>حداکثر زیان</span><b>${fa(cap*rk,0)}</b></div><div class="m"><span>اندازه‌ی موقعیت (واحد)</span><b>${fa(qty)}</b><span>${fa(val/cap*100,0)}٪ سرمایه</span></div>`}
+["cap","rk","mul"].forEach(i=>$(i).addEventListener("input",renderCalc));
+function renderNews(){
+ const T={gold:"طلا",silver:"نقره",copper:"مس",macro:"کلان (دلار، نرخ بهره، تورم)"},box=$("news");box.innerHTML="";
+ [["_fa","فارسی"],["_en","English"]].forEach(([suf,lab])=>{const col=document.createElement("div"),h=document.createElement("b");h.textContent=lab;col.appendChild(h);
+  for(const k in T){const items=D.news[k+suf]||[],t=document.createElement("div");t.className="sub";t.textContent=T[k];col.appendChild(t);const ul=document.createElement("ul");
+   items.forEach(n=>{const li=document.createElement("li"),a=document.createElement("a");a.textContent=n.t;if(/^https?:/.test(n.u||""))a.href=n.u;a.target="_blank";a.rel="noopener";const tag=document.createElement("span");tag.innerHTML=" "+mark(n.s==="+"?1:n.s==="-"?-1:0);li.appendChild(a);li.appendChild(tag);ul.appendChild(li)});
+   if(!items.length){const li=document.createElement("li");li.className="sub";li.textContent="خبری دریافت نشد";ul.appendChild(li)}col.appendChild(ul)}
+  box.appendChild(col)})}
+$("upd").textContent=D.updated?"آخرین به‌روزرسانی: "+D.updated:"";
+$("ai").textContent=D.analysis||"تحلیل Claude فعال نیست. برای فعال‌سازی کلید API را در GitHub Secrets با نام ANTHROPIC_API_KEY ذخیره کنید.";
+$("err").textContent=(D.errors&&D.errors.length)?"خطاهای آخرین اجرا: "+D.errors.join(" | "):"";
+renderSum();renderCot();renderBub();renderIran();renderMacro();renderChart();renderCalc();renderNews();
 </script></body></html>
